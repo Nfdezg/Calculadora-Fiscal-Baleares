@@ -1056,6 +1056,15 @@ function saveProgresivo(nota){
     var f=G.fincas[i],base=f.base,pct=cc().porcentaje/100;
     if(f.tipo==='garaje'){var rg=calcGar(base);res.imps.push({n:'ITP '+fLabel(f),t:rg.d,b:eur(base),bc:eur(base*pct),c:eur(rg.c*pct),nt:t('n_tarifaGaraje')});res.total+=rg.c*pct;}
     else{var rp=calcProg(base);res.imps.push({n:'ITP '+fLabel(f),t:ppct(rp.tm)+' medio',b:eur(base),bc:eur(base*pct),c:eur(rp.cuota*pct),nt:nota});res.total+=rp.cuota*pct;}
+    // Comprobación por tasación (solo si no hay VRC que blinde)
+    var _vrcProt=f.tieneVref===true&&f.vref>0;
+    if(f.tasacion>f.precio&&!_vrcProt){
+      var pct2=cc().porcentaje/100;
+      var cuotaOrig2=f.tipo==='garaje'?calcGar(base).c*pct2:calcProg(base).cuota*pct2;
+      var cuotaTas2=f.tipo==='garaje'?calcGar(f.tasacion).c*pct2:calcProg(f.tasacion).cuota*pct2;
+      var diff2=cuotaTas2-cuotaOrig2;
+      if(diff2>0){var int2=diff2*DEMORA*DEMORA_ANIOS;res.comprob.push({finca:fLabel(f),diff:diff2,int:int2,baseTas:f.tasacion,cuotaOrig:cuotaOrig2,cuotaTas:cuotaTas2});}
+    }
   }
   saveR(res);
 }
